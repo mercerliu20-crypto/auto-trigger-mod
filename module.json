@@ -2,7 +2,7 @@
   "id": "auto-trigger-mod",
   "title": "Auto Trigger Mod",
   "description": "Adds a button to item cards allowing users to configure an Activity that triggers upon a successful weapon/spell attack. This is the streamlined English framework version.",
-  "version": "1.0",
+  "version": "1.0.1",
   "compatibility": {
     "minimum": "12",
     "verified": "13"
