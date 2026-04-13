@@ -36,9 +36,3 @@ The mod blends perfectly with modern Foundry UI:
 2. **Setup**: Choose the attack type, hit condition, and roll range. Then select which **Activity** should be triggered.
 3. **Trigger**: Perform an attack. If the criteria are met, the **Auto-Trigger List** will appear. Review your choices and click **Trigger Selected**.
 
----
-
-## 📄 License & Credits
-Developed by **Aetherblade**. Designed for speed, compatibility, and a premium user experience.
-
-*Note: This is the optimized release version. For the full source with development comments, please refer to the Chinese (Development) branch.*
