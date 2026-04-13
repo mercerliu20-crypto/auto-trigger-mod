@@ -2,7 +2,7 @@
 
 A high-performance automation utility for **Foundry VTT (v12/v13+)** and **D&D 5e (v3.2 - v4.x)**. 
 
-This module allows players to bind secondary activities (like Vengeful Blade, Ray of Frost, or custom maneuvers) to specific attack triggers. When an attack meets your custom criteria, the mod prompts you with a clean, consolidated checklist to execute your follow-up actions instantly.
+This module allows players to bind secondary activities (like all kinds of smite, or custom maneuvers) to specific attack triggers. When an attack meets your custom criteria, the mod prompts you with a clean, consolidated checklist to execute your follow-up actions instantly.
 
 ---
 
