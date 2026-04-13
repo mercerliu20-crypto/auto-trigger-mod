@@ -2,7 +2,7 @@
 
 A high-performance automation utility for **Foundry VTT (v12/v13+)** and **D&D 5e (v3.2 - v4.x)**. 
 
-This module allows players to bind secondary activities (like Vengeful Blade, Ray of Frost, or custom maneuvers) to specific attack triggers. When an attack meets your custom criteria, the mod prompts you with a clean, consolidated checklist to execute your follow-up actions instantly.
+This module allows players to bind secondary activities (like all kinds of smite, or custom maneuvers) to specific attack triggers. When an attack meets your custom criteria, the mod prompts you with a clean, consolidated checklist to execute your follow-up actions instantly.
 
 ---
 
@@ -36,9 +36,3 @@ The mod blends perfectly with modern Foundry UI:
 2. **Setup**: Choose the attack type, hit condition, and roll range. Then select which **Activity** should be triggered.
 3. **Trigger**: Perform an attack. If the criteria are met, the **Auto-Trigger List** will appear. Review your choices and click **Trigger Selected**.
 
----
-
-## 📄 License & Credits
-Developed by **Aetherblade**. Designed for speed, compatibility, and a premium user experience.
-
-*Note: This is the optimized release version. For the full source with development comments, please refer to the Chinese (Development) branch.*
