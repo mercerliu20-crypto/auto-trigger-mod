@@ -1,29 +1,44 @@
-# Auto Trigger Mod for Foundry VTT (D&D 5e)
+# Auto Trigger Mod (v1.5.0)
 
-A streamlined D&D 5e v3.x/v4.x combat automation module for Foundry VTT (v12/v13+).
+A high-performance automation utility for **Foundry VTT (v12/v13+)** and **D&D 5e (v3.2 - v4.x)**. 
 
-This module empowers players to seamlessly bind secondary activities to specific attack conditions, fully automating the prompt to use an activity the moment an attack scores a hit!
+This module allows players to bind secondary activities (like Vengeful Blade, Ray of Frost, or custom maneuvers) to specific attack triggers. When an attack meets your custom criteria, the mod prompts you with a clean, consolidated checklist to execute your follow-up actions instantly.
 
-## Features & Usage
+---
 
-- **Where to Find the Control:** 
-  Once installed, you can configure your triggers on any item that has an Action/Activity. 
-  Simply locate the item in your character's inventory sheet, **Right-Click the item** to open the context menu, and click the **"Link Settings" (with a ⚡ lightning bolt icon)** option! You can also find this lightning bolt button directly mapped into the header/title bar when you open the Item configuration window.
+## 🚀 Key Features
 
-- **The Configuration Window:** 
-  Clicking the control pops up a clean window where you can bind the rules. It contains two selectors:
-  1. **Trigger Condition:** You can restrict the trigger to fire only upon specific attacks. Select between `Any Weapon/Spell Attack`, `Melee Weapon Attack Only`, `Ranged Weapon Attack Only`, `Melee Spell Attack Only`, or `Ranged Spell Attack Only`.
-  2. **Linked Action:** Select the actual Activity component attached to this item that you wish to prompt when the hit is resolved.
+### ⚡ Consolidated Trigger List
+If an attack triggers multiple items, they are combined into a single, elegant checklist. You can selectively trigger only the actions you want for that specific moment, keeping the combat flow smooth and avoiding pop-up fatigue.
 
-- **Automated Execution:** 
-  - **With Midi-QOL:** Intercepts the `midi-qol.AttackRollComplete` workflow to verify if the attack *actually* struck a target before initiating the linked execution prompt.
-  - **Vanilla Foundry:** Smoothly acts out-of-the-box upon `dnd5e.postRollAttack`, prompting the user directly after the attack roll resolves.
+### 🧠 Advanced Logic Filtering
+Fine-tune exactly when your items should trigger:
+- **Attack Type**: Filter by Melee/Ranged, Weapon/Spell.
+- **Hit Result**: Trigger only on **Hits**, only on **Misses**, or Always.
+- **Natural Roll Range**: Trigger based on the raw d20 roll (e.g., set `19-20` for critical-only effects, or `2-6` for fumble-recovery maneuvers).
 
-- **Extremely Lightweight:** 
-  Designed with absolute compatibility in mind. Uses native Foundry V12+ `ApplicationV2` architecture and features zero third-party CSS or image injections. Fully compatible with vanilla UI, Tidy 5e Sheets, and older interface layouts.
+### 🎨 Seamless UI Integration
+The mod blends perfectly with modern Foundry UI:
+- **Header Buttons**: A lightning bolt icon ⚡ appears in the header of Item Sheets.
+- **Context Menu**: Right-click any item in your inventory to access "Link Settings".
+- **Visual Feedback**: The trigger list displays the attack outcome (Hit/Miss) and the natural roll result for immediate clarity.
 
-## Installation
+---
 
-1. Open your Foundry Setup -> Add-on Modules -> Install Module.
-2. Paste the `module.json` manifest link from the repository releases.
-   *Or extract the files directly into your `Data/modules/auto-trigger-mod` directory.*
+## 🛠 Usage & Requirements
+
+### Installation
+1. Install via manifest or extract to `Data/modules/auto-trigger-mod`.
+2. **Requirement**: This release version is optimized for **Midi-QOL**. Midi-QOL is required to handle automated hit detection and roll extraction.
+
+### How to use
+1. **Configure**: Right-click an item in your inventory and select **Link Settings** (⚡).
+2. **Setup**: Choose the attack type, hit condition, and roll range. Then select which **Activity** should be triggered.
+3. **Trigger**: Perform an attack. If the criteria are met, the **Auto-Trigger List** will appear. Review your choices and click **Trigger Selected**.
+
+---
+
+## 📄 License & Credits
+Developed by **Aetherblade**. Designed for speed, compatibility, and a premium user experience.
+
+*Note: This is the optimized release version. For the full source with development comments, please refer to the Chinese (Development) branch.*
