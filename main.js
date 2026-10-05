@@ -1,5 +1,23 @@
 const MODULE_ID = "auto-trigger-mod";
 
+// Document type names are extensible (including custom martial arts). The
+// parent Actor and activities model define eligibility, not a legacy isOwned
+// flag or the number of activities already authored on a new draft.
+function canConfigureTrigger(item) {
+    const actor = item?.actor ?? (item?.parent?.documentName === "Actor" ? item.parent : null);
+    return !!actor && item.isOwner === true && item.system?.activities != null;
+}
+
+// Read old single-activity flags without migrating or writing world data.
+function linkedActivityIds(config) {
+    const ids = Array.isArray(config?.triggerActivityIds)
+        ? config.triggerActivityIds : [config?.triggerActivityId];
+    return [...new Set(ids.filter(id => typeof id === "string" && id.length > 0))];
+}
+
+const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g,
+    char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+
 Hooks.once("init", () => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -21,11 +39,11 @@ Hooks.once("init", () => {
 });
 
 async function promptTriggerConfig(item) {
-    if (!item.system?.activities) return;
+    if (!canConfigureTrigger(item)) return;
     const activities = item.system.activities.contents;
     if (!activities?.length) return ui.notifications.warn(`${item.name} has no Activity set up.`);
 
-    const f = item.flags[MODULE_ID]?.all || {};
+    const f = item.flags?.[MODULE_ID]?.all || {};
     const actTypes = [
         { v: "any", l: "Any Attack" },
         { v: "mwak", l: "Melee Weapon" },
@@ -41,8 +59,12 @@ async function promptTriggerConfig(item) {
 
     const typeOpts = actTypes.map(t => `<option value="${t.v}" ${t.v === (f.triggerAttackType || "any") ? "selected" : ""}>${t.l}</option>`).join("");
     const resOpts = resTypes.map(r => `<option value="${r.v}" ${r.v === (f.triggerResult || "any") ? "selected" : ""}>${r.l}</option>`).join("");
-    const activityOpts = `<option value="">(Disabled)</option>` + 
-        activities.map(a => `<option value="${a.id}" ${a.id === f.triggerActivityId ? "selected" : ""}>${a.name || "Default Action"}</option>`).join("");
+    const linkedIds = new Set(linkedActivityIds(f));
+    const activityOpts = activities.map(a => `
+        <label class="at-row">
+            <input type="checkbox" class="at-checkbox" data-at-linked-activity value="${escapeHTML(a.id)}" ${linkedIds.has(a.id) ? "checked" : ""} />
+            <span class="at-info"><span class="at-activity-name">${escapeHTML(a.name || "Default Action")}</span></span>
+        </label>`).join("");
 
     const result = await foundry.applications.api.DialogV2.prompt({
         window: { title: `${item.name} Configuration` },
@@ -54,16 +76,26 @@ async function promptTriggerConfig(item) {
                     <input type="number" name="minRoll" value="${f.triggerMinRoll ?? 1}" min="1" max="20" style="text-align:center;" /> ~ 
                     <input type="number" name="maxRoll" value="${f.triggerMaxRoll ?? 20}" min="1" max="20" style="text-align:center;" />
                 </div></div>
-                <hr/><div class="form-group"><label>Linked Activity</label><div class="form-fields"><select name="activityId">${activityOpts}</select></div></div>
+                <hr/><fieldset><legend>Linked Activities</legend>
+                    <p>Select one or more activities. Clear all selections to disable this trigger.</p>
+                    <div class="at-list">${activityOpts}</div>
+                </fieldset>
             </form>
         `,
-        ok: { label: "Save", callback: (e, b) => new FormDataExtended(b.form).object }
+        ok: { label: "Save", callback: (e, b) => ({
+            ...new FormDataExtended(b.form).object,
+            activityIds: Array.from(b.form.querySelectorAll('input[data-at-linked-activity]:checked'), input => input.value)
+        }) }
     });
 
     if (result) {
-        if (!result.activityId) await item.unsetFlag(MODULE_ID, "all");
+        const ids = linkedActivityIds({ triggerActivityIds: result.activityIds, triggerActivityId: result.activityId })
+            .filter(id => item.system.activities.get(id));
+        if (!ids.length) await item.unsetFlag(MODULE_ID, "all");
         else await item.setFlag(MODULE_ID, "all", {
-            triggerActivityId: result.activityId,
+            // Retain the first ID for existing macros that read the old field.
+            triggerActivityId: ids[0],
+            triggerActivityIds: ids,
             triggerAttackType: result.attackType,
             triggerResult: result.triggerResult,
             triggerMinRoll: parseInt(result.minRoll) || 1,
@@ -82,12 +114,15 @@ async function checkAndTrigger(actor, item, type, midi = false, context = {}) {
 
     for (const i of actor.items) {
         const f = i.getFlag(MODULE_ID, "all");
-        if (!f?.triggerActivityId) continue;
+        const ids = linkedActivityIds(f);
+        if (!ids.length) continue;
         if (f.triggerAttackType && f.triggerAttackType !== "any" && f.triggerAttackType !== type) continue;
         if (f.triggerResult && f.triggerResult !== "any" && midi && f.triggerResult !== hit) continue;
         if (roll !== null && (roll < (f.triggerMinRoll ?? 1) || roll > (f.triggerMaxRoll ?? 20))) continue;
-        const a = i.system.activities?.get(f.triggerActivityId);
-        if (a) candidates.push({ item: i, activity: a });
+        for (const id of ids) {
+            const a = i.system.activities?.get(id);
+            if (a) candidates.push({ item: i, activity: a });
+        }
     }
 
     if (!candidates.length) return;
@@ -121,7 +156,7 @@ async function checkAndTrigger(actor, item, type, midi = false, context = {}) {
 }
 
 const _onRender = (item, btns) => {
-    if (!item?.isOwned || !item.system?.activities) return;
+    if (!canConfigureTrigger(item)) return;
     btns.unshift({
         label: "Link Trigger",
         class: "auto-trigger",
@@ -132,14 +167,23 @@ const _onRender = (item, btns) => {
 
 Hooks.on("getHeaderControlsApplicationV2", (a, c) => { if(a.document?.documentName === "Item") _onRender(a.document, c); });
 Hooks.on("getApplicationHeaderButtons", (a, b) => { if (a.document?.documentName === "Item") _onRender(a.document, b); });
-Hooks.on("dnd5e.getItemContextOptions", (item, options) => {
-    if (item.isOwned && item.system?.activities?.size > 0) {
+function addTriggerContextOption(item, options) {
+    if (canConfigureTrigger(item) && !options.some(option => option.autoTriggerMod === MODULE_ID)) {
         options.push({
             name: "Trigger Settings",
             icon: '<i class="fas fa-bolt"></i>',
+            autoTriggerMod: MODULE_ID,
+            condition: () => canConfigureTrigger(item),
             callback: () => promptTriggerConfig(item)
         });
     }
+}
+
+Hooks.on("dnd5e.getItemContextOptions", addTriggerContextOption);
+// Features and inline activities use a separate native/Tidy context hook.
+// The trigger is still configured on its owning Item, with the same flags.
+Hooks.on("dnd5e.getItemActivityContext", (activity, target, options) => {
+    addTriggerContextOption(activity?.item, options);
 });
 
 Hooks.on("midi-qol.AttackRollComplete", async (workflow) => {
